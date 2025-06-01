@@ -10,12 +10,12 @@ import { Badge } from "@/components/ui/badge"
 import NutritionLabel from "@/components/nutrition-label"
 import PriceComparison from "@/components/price-comparison"
 import BasketButton from "@/components/basket-button"
-import { getProductById, getFeaturedProducts } from "@/lib/api"
+import { getProductById, getFeaturedProducts, TransformedProduct } from "@/lib/api"
 
 export default function ProductPage({ params }: { params: { id: string } }) {
-  const [product, setProduct] = useState(null)
+  const [product, setProduct] = useState<TransformedProduct | null>(null)
   const [loading, setLoading] = useState(true)
-  const [relatedProducts, setRelatedProducts] = useState([])
+  const [relatedProducts, setRelatedProducts] = useState<TransformedProduct[]>([])
   const [quantity, setQuantity] = useState(1)
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         const productData = await getProductById(params.id)
 
         if (productData) {
-          const expandedProduct = {
+          const expandedProduct: TransformedProduct = {
             ...productData,
             brand: productData.brand || "Nature's Best",
             description:
@@ -33,12 +33,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               servingSize: "1 medium serving",
               servingsPerContainer: "5-7",
               calories: productData.nutrition.calories,
-              totalFat: productData.nutrition.fat,
+              totalFat: productData.nutrition.totalFat,
               saturatedFat: "0.1g",
               transFat: "0g",
               cholesterol: "0mg",
               sodium: "1mg",
-              totalCarbs: productData.nutrition.carbs,
+              totalCarbs: productData.nutrition.totalCarbs,
               dietaryFiber: "3.1g",
               sugars: "14.4g",
               protein: productData.nutrition.protein,
@@ -48,8 +48,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               potassium: "422mg",
             },
             ingredients: productData.ingredients || "Natural ingredients.",
-            allergens: productData.allergens || "None.",
           }
+
           setProduct(expandedProduct)
         }
 

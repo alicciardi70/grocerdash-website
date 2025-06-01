@@ -4,46 +4,35 @@ import Link from "next/link"
 import type { BasketItem } from "@/contexts/basket-context"
 import { useLocation } from "@/contexts/location-context"
 
+// Update `BasketStoreComparisonProps` to include `stores`
 interface BasketStoreComparisonProps {
   basketItems: BasketItem[]
+  stores: { id: string; name: string; totalPrice: number }[]
 }
 
-export default function BasketStoreComparison({ basketItems }: BasketStoreComparisonProps) {
+export default function BasketStoreComparison({ basketItems, stores }: BasketStoreComparisonProps) {
   const { selectedStores, zipCode } = useLocation()
 
-  // If no items, don't render anything
-  if (!basketItems || basketItems.length === 0) {
+  // If no items or stores, don't render anything
+  if (!basketItems || basketItems.length === 0 || !stores || stores.length === 0) {
     return null
   }
 
   // Calculate what each store would cost for ALL items in basket
-  const storeComparisons = selectedStores.map((store) => {
-    let totalCost = 0
-    let availableItems = 0
-    let unavailableItems = 0
+  const storeComparisons = stores.map((store) => {
+    let totalCost = basketItems.reduce((sum, item) => {
+      const storePrice = item.price || 0 // Assume `item.price` is a number
+      return sum + storePrice * item.quantity
+    }, 0)
 
-    basketItems.forEach((item) => {
-      // Check if this store has this product (simulate by checking if item was added from this store)
-      const itemAvailableAtStore = item.store === store.name
-
-      if (itemAvailableAtStore) {
-        totalCost += item.price * item.quantity
-        availableItems += item.quantity
-      } else {
-        // Simulate price for unavailable items (would be fetched from API in real app)
-        const estimatedPrice = item.price * (0.95 + Math.random() * 0.1) // ±5% variation
-        totalCost += estimatedPrice * item.quantity
-        unavailableItems += item.quantity
-      }
-    })
+    let availableItems = basketItems.filter((item) => {
+      return item.price > 0 // Check if `item.price` is greater than 0
+    }).length
 
     return {
-      store,
+      store: store.name,
       totalCost,
       availableItems,
-      unavailableItems,
-      totalItems: availableItems + unavailableItems,
-      hasAllItems: unavailableItems === 0,
     }
   })
 
@@ -67,7 +56,7 @@ export default function BasketStoreComparison({ basketItems }: BasketStoreCompar
       <div className="space-y-4 mb-6">
         {storeComparisons.map((comparison, index) => (
           <div
-            key={comparison.store.id}
+            key={comparison.store}
             className={`p-4 rounded-lg border ${
               index === 0 ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
             }`}
@@ -76,8 +65,7 @@ export default function BasketStoreComparison({ basketItems }: BasketStoreCompar
               <div className="flex items-center">
                 {index === 0 && <Trophy className="h-5 w-5 text-green-600 mr-2" />}
                 <div>
-                  <h3 className={`font-semibold ${index === 0 ? "text-green-800" : ""}`}>{comparison.store.name}</h3>
-                  <p className="text-xs text-gray-500">{comparison.store.distance}</p>
+                  <h3 className={`font-semibold ${index === 0 ? "text-green-800" : ""}`}>{comparison.store}</h3>
                 </div>
               </div>
               <div className="text-right">
@@ -92,12 +80,7 @@ export default function BasketStoreComparison({ basketItems }: BasketStoreCompar
 
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center space-x-4">
-                <span className="text-gray-600">{comparison.totalItems} items</span>
-                {comparison.hasAllItems ? (
-                  <span className="text-green-600 text-xs">✓ All available</span>
-                ) : (
-                  <span className="text-orange-600 text-xs">{comparison.unavailableItems} estimated</span>
-                )}
+                <span className="text-gray-600">{comparison.availableItems} items</span>
               </div>
               {index === 0 && <span className="text-green-600 text-xs font-medium">Best Total</span>}
             </div>
@@ -112,7 +95,7 @@ export default function BasketStoreComparison({ basketItems }: BasketStoreCompar
             <span className="text-green-600">${(highestPrice - lowestPrice).toFixed(2)}</span>
           </div>
           <p className="text-sm text-gray-600">
-            Shopping at {storeComparisons[0].store.name} would save you the most for your entire basket.
+            Shopping at {storeComparisons[0].store} would save you the most for your entire basket.
           </p>
         </div>
       )}
@@ -132,7 +115,7 @@ export default function BasketStoreComparison({ basketItems }: BasketStoreCompar
 
         <div className="grid grid-cols-2 gap-2">
           <Link href="/search">
-            <Button variant="outline" className="w-full text-sm">
+            <Button className="w-full text-sm border border-gray-300 bg-white text-gray-800 hover:bg-gray-100">
               <ArrowRight className="mr-1 h-4 w-4" />
               Add More
             </Button>
@@ -145,8 +128,9 @@ export default function BasketStoreComparison({ basketItems }: BasketStoreCompar
           </Link>
         </div>
 
+        {/* Remove border from 'Change Store Selection' button */}
         <Link href="/stores">
-          <Button variant="ghost" className="w-full text-sm text-gray-600">
+          <Button className="w-full text-sm bg-white text-gray-800 hover:bg-gray-100">
             Change Store Selection
           </Button>
         </Link>

@@ -11,13 +11,6 @@ import { Badge } from "@/components/ui/badge"
 import { useBasket } from "@/contexts/basket-context"
 import BasketStoreComparison from "@/components/basket-store-comparison"
 
-// Mock data for selected stores
-const selectedStores = [
-  { id: 1, name: "Fresh Market" },
-  { id: 2, name: "Organic Grocers" },
-  { id: 3, name: "Value Supermarket" },
-]
-
 export default function BasketPage() {
   const { items, updateQuantity, removeItem, getTotalPrice } = useBasket()
   const [basketName, setBasketName] = useState("My Basket")
@@ -36,6 +29,17 @@ export default function BasketPage() {
     },
     {} as Record<string, typeof items>,
   )
+
+  // Dynamically generate stores based on basket items
+  const storesWithProducts = items.reduce((acc, item) => {
+    if (!acc[item.store]) {
+      acc[item.store] = { id: item.store, name: item.store, totalPrice: 0 }
+    }
+    acc[item.store].totalPrice += item.price * item.quantity
+    return acc
+  }, {} as Record<string, { id: string; name: string; totalPrice: number }>)
+
+  const selectedStores = Object.values(storesWithProducts)
 
   return (
     <div className="min-h-screen bg-gray-50">

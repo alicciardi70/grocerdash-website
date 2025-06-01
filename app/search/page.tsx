@@ -320,21 +320,19 @@ export default function SearchPage() {
                   <div className="p-4">
                     <div className="space-y-2 mb-3">
                       {product.prices
-                        // Sort prices from lowest to highest
                         .sort((a, b) => a.price - b.price)
-                        // Limit to 4 prices maximum (best price + 3 others)
                         .slice(0, 4)
                         .map((price, index) => (
                           <div
                             key={index}
-                            className={`flex justify-between text-xs ${index === 0 ? "font-medium" : ""}`}
+                            className={`flex justify-between text-xs ${index === 0 ? "font-medium text-lg" : ""}`}
                           >
                             <div className="flex items-center">
-                              {index === 0 && <span className="text-green-600 mr-1">●</span>}
-                              <span className={index === 0 ? "text-green-600" : "text-gray-600"}>{price.store}</span>
+                              {index === 0 && <span className="text-green-600 mr-1"></span>}
+                              <span className={index === 0 ? "text-green-600 text-lg" : "text-gray-600"}>{price.store}</span>
                             </div>
                             <div className="text-right">
-                              <span className={index === 0 ? "font-medium text-green-600" : ""}>
+                              <span className={index === 0 ? "font-medium text-green-600 text-lg" : ""}>
                                 ${price.price.toFixed(2)}
                               </span>
                             </div>
