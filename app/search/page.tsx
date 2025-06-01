@@ -16,11 +16,34 @@ import BasketButton from "@/components/basket-button"
 import LocationSetup from "@/components/location-setup"
 import { useLocation } from "@/contexts/location-context"
 import BasketIcon from "@/components/basket-icon"
+import { cn } from "@/lib/utils"
+
+// Add type annotations for product and prices
+interface Price {
+  store: string
+  price: number
+  unitCost?: string
+}
+
+interface Product {
+  id: string
+  name: string
+  image: string
+  prices: Price[]
+  nutrition: {
+    calories: number
+    protein: string
+    fat: string
+    carbs: string
+  }
+  brand?: string
+  matchScore?: number
+}
 
 export default function SearchPage() {
   const { zipCode, selectedStores, isLocationSet } = useLocation()
   const [query, setQuery] = useState("")
-  const [results, setResults] = useState([])
+  const [results, setResults] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [showLocationSetup, setShowLocationSetup] = useState(false)
@@ -94,7 +117,7 @@ export default function SearchPage() {
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <Link href="/" className="mr-4">
+                <Link href="/" className={cn("mr-4")}>
                   <ArrowLeft className="h-6 w-6" />
                 </Link>
                 <h1 className="text-xl font-bold">Search Products</h1>
@@ -120,7 +143,7 @@ export default function SearchPage() {
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <Link href="/" className="mr-4">
+                <Link href="/" className={cn("mr-4")}>
                   <ArrowLeft className="h-6 w-6" />
                 </Link>
                 <h1 className="text-xl font-bold">Search Products</h1>
@@ -145,7 +168,7 @@ export default function SearchPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <Link href="/" className="mr-4">
+              <Link href="/" className={cn("mr-4")}>
                 <ArrowLeft className="h-6 w-6" />
               </Link>
               <h1 className="text-xl font-bold">Search Products</h1>
@@ -172,7 +195,7 @@ export default function SearchPage() {
             <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={loading}>
               {loading ? "Searching..." : "Search"}
             </Button>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className={cn("gap-2")}>
               <Filter className="h-4 w-4" />
               Filter
             </Button>
@@ -202,7 +225,7 @@ export default function SearchPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {selectedStores.map((store) => (
-              <Badge key={store.id} variant="outline" className="py-1 px-3">
+              <Badge key={store.id} variant="outline" className={cn("py-1 px-3")}>
                 {store.name} • {store.distance}
               </Badge>
             ))}
@@ -253,7 +276,7 @@ export default function SearchPage() {
                       src={product.image || "/placeholder.svg"}
                       alt={product.name}
                       fill
-                      className="object-contain p-2"
+                      className={cn("object-contain p-2")}
                     />
                   </div>
                   <div className="flex-1">
@@ -297,16 +320,14 @@ export default function SearchPage() {
                   <div className="p-4">
                     <div className="space-y-2 mb-3">
                       {product.prices
-                        // Filter to only show prices from selected stores
-                        .filter((price) => selectedStores.some((store) => store.name === price.store))
                         // Sort prices from lowest to highest
                         .sort((a, b) => a.price - b.price)
-                        // Limit to 3 prices maximum
-                        .slice(0, 3)
+                        // Limit to 4 prices maximum (best price + 3 others)
+                        .slice(0, 4)
                         .map((price, index) => (
                           <div
                             key={index}
-                            className={`flex justify-between text-sm ${index === 0 ? "font-medium" : ""}`}
+                            className={`flex justify-between text-xs ${index === 0 ? "font-medium" : ""}`}
                           >
                             <div className="flex items-center">
                               {index === 0 && <span className="text-green-600 mr-1">●</span>}
@@ -316,13 +337,11 @@ export default function SearchPage() {
                               <span className={index === 0 ? "font-medium text-green-600" : ""}>
                                 ${price.price.toFixed(2)}
                               </span>
-                              {price.unitCost && <div className="text-xs text-gray-500">{price.unitCost}</div>}
                             </div>
                           </div>
                         ))}
-                      {product.prices.filter((price) => selectedStores.some((store) => store.name === price.store))
-                        .length === 0 && (
-                        <div className="text-sm text-gray-500 italic">No prices available at your selected stores</div>
+                      {product.prices.length === 0 && (
+                        <div className="text-sm text-gray-500 italic">No prices available</div>
                       )}
                     </div>
                     <BasketButton product={product} className="w-full" />
