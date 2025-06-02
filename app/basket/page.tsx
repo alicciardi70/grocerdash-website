@@ -15,8 +15,41 @@ export default function BasketPage() {
   const { items, updateQuantity, removeItem, getTotalPrice } = useBasket()
   const [basketName, setBasketName] = useState("My Basket")
 
+  // Calculate total calories per store
+  const caloriesByStore = items.reduce((acc, item) => {
+    if (!acc[item.store]) {
+      acc[item.store] = 0
+    }
+    acc[item.store] += item.nutrition.calories * item.quantity
+    return acc
+  }, {} as Record<string, number>)
+
+  // Calculate total items per store
+  const itemsByStoreCount = items.reduce((acc, item) => {
+    if (!acc[item.store]) {
+      acc[item.store] = 0
+    }
+    acc[item.store] += item.quantity
+    return acc
+  }, {} as Record<string, number>)
+
+  // Calculate total cost per store
+  const costByStore = items.reduce((acc, item) => {
+    if (!acc[item.store]) {
+      acc[item.store] = 0
+    }
+    acc[item.store] += item.price * item.quantity
+    return acc
+  }, {} as Record<string, number>)
+
   // Calculate total calories
-  const totalCalories = items.reduce((sum, item) => sum + item.nutrition.calories * item.quantity, 0)
+  const totalCalories = Object.values(caloriesByStore).reduce((sum, calories) => sum + calories, 0)
+
+  // Calculate total items
+  const totalItems = Object.values(itemsByStoreCount).reduce((sum, itemCount) => sum + itemCount, 0)
+
+  // Calculate total cost
+  const totalPrice = Object.values(costByStore).reduce((sum, cost) => sum + cost, 0)
 
   // Group items by store for display
   const itemsByStore = items.reduce(
@@ -80,7 +113,7 @@ export default function BasketPage() {
                         className="border-0 p-0 text-lg font-bold focus-visible:ring-0 focus-visible:ring-offset-0"
                       />
                     </div>
-                    <Button variant="outline" size="sm" className="gap-1">
+                    <Button className="gap-1">
                       <Save className="h-4 w-4" />
                       Save Basket
                     </Button>
@@ -95,7 +128,7 @@ export default function BasketPage() {
                         </Badge>
                       ))}
                       <Link href="/stores">
-                        <Badge variant="outline" className="py-1 px-3 bg-gray-100 hover:bg-gray-200 cursor-pointer">
+                        <Badge className="py-1 px-3 bg-gray-100 hover:bg-gray-200 cursor-pointer">
                           + Change
                         </Badge>
                       </Link>
@@ -172,19 +205,35 @@ export default function BasketPage() {
                 <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                   <h2 className="text-lg font-bold mb-4">Nutritional Summary</h2>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {Object.entries(caloriesByStore).map(([store, calories]) => (
+                      <div key={store} className="bg-blue-50 p-4 rounded-lg text-center">
+                        <p className="text-sm text-gray-600 mb-1">Total Calories ({store})</p>
+                        <p className="text-xl font-bold text-blue-700">{calories}</p>
+                      </div>
+                    ))}
                     <div className="bg-blue-50 p-4 rounded-lg text-center">
                       <p className="text-sm text-gray-600 mb-1">Total Calories</p>
                       <p className="text-xl font-bold text-blue-700">{totalCalories}</p>
                     </div>
+                    {Object.entries(itemsByStoreCount).map(([store, itemCount]) => (
+                      <div key={store} className="bg-green-50 p-4 rounded-lg text-center">
+                        <p className="text-sm text-gray-600 mb-1">Total Items ({store})</p>
+                        <p className="text-xl font-bold text-green-700">{itemCount}</p>
+                      </div>
+                    ))}
                     <div className="bg-green-50 p-4 rounded-lg text-center">
                       <p className="text-sm text-gray-600 mb-1">Total Items</p>
-                      <p className="text-xl font-bold text-green-700">
-                        {items.reduce((sum, item) => sum + item.quantity, 0)}
-                      </p>
+                      <p className="text-xl font-bold text-green-700">{totalItems}</p>
                     </div>
+                    {Object.entries(costByStore).map(([store, cost]) => (
+                      <div key={store} className="bg-yellow-50 p-4 rounded-lg text-center">
+                        <p className="text-sm text-gray-600 mb-1">Total Cost ({store})</p>
+                        <p className="text-xl font-bold text-yellow-700">${cost.toFixed(2)}</p>
+                      </div>
+                    ))}
                     <div className="bg-yellow-50 p-4 rounded-lg text-center">
                       <p className="text-sm text-gray-600 mb-1">Total Cost</p>
-                      <p className="text-xl font-bold text-yellow-700">${getTotalPrice().toFixed(2)}</p>
+                      <p className="text-xl font-bold text-yellow-700">${totalPrice.toFixed(2)}</p>
                     </div>
                     <div className="bg-purple-50 p-4 rounded-lg text-center">
                       <p className="text-sm text-gray-600 mb-1">Stores</p>

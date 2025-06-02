@@ -11,6 +11,10 @@ export interface BasketItem {
   unit: string
   quantity: number
   store: string
+  prices: { // Array of prices for the same item across different stores
+    store: string
+    price: number
+  }[]
   nutrition: {
     calories: number
     protein: string
@@ -52,37 +56,64 @@ export function BasketProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("grocersmart-basket", JSON.stringify(items))
   }, [items])
 
-  const addItem = (product: any, selectedStore?: string) => {
-    // Use the best price store if no store is specified
-    const bestPriceStore = product.prices?.[0] || { store: "Fresh Market", price: 0 }
-    const store = selectedStore || bestPriceStore.store
-    const price = selectedStore
-      ? product.prices?.find((p) => p.store === selectedStore)?.price || bestPriceStore.price
-      : bestPriceStore.price
+ const addItem = (product: any, selectedStore?: string) => {
+    if (product.prices && product.prices.length > 0) {
+      product.prices.forEach((storePrice: { store: string; price: number }) => {
+        const newItem: BasketItem = {
+          id: `${product.id}-${storePrice.store}`,
+          name: product.name,
+          image: product.image,
+          price: storePrice.price,
+          unit: product.unit || "each",
+          quantity: 1,
+          store: storePrice.store,
+          prices: product.prices?.map((p: { store: string; price: number }) => ({
+            store: p.store,
+            price: p.price
+          })) || [],
+          nutrition: product.nutrition,
+          brand: product.brand,
+        }
 
-    const newItem: BasketItem = {
-      id: `${product.id}-${store}`,
-      name: product.name,
-      image: product.image,
-      price: price,
-      unit: product.unit || "each",
-      quantity: 1,
-      store: store,
-      nutrition: product.nutrition,
-      brand: product.brand,
-    }
+        setItems((currentItems) => {
+          const existingItem = currentItems.find((item) => item.id === newItem.id)
 
-    setItems((currentItems) => {
-      const existingItem = currentItems.find((item) => item.id === newItem.id)
-
-      if (existingItem) {
-        // If item already exists, increase quantity
-        return currentItems.map((item) => (item.id === newItem.id ? { ...item, quantity: item.quantity + 1 } : item))
-      } else {
-        // Add new item
-        return [...currentItems, newItem]
+          if (existingItem) {
+            // If item already exists, increase quantity
+            return currentItems.map((item) => (item.id === newItem.id ? { ...item, quantity: item.quantity + 1 } : item))
+          } else {
+            // Add new item
+            return [...currentItems, newItem]
+          }
+        })
+      })
+    } else {
+      // If no prices are available, add the item with default values
+      const newItem: BasketItem = {
+        id: `${product.id}-default`,
+        name: product.name,
+        image: product.image,
+        price: 0,
+        unit: product.unit || "each",
+        quantity: 1,
+        store: "default",
+        prices: [],
+        nutrition: product.nutrition,
+        brand: product.brand,
       }
-    })
+
+      setItems((currentItems) => {
+        const existingItem = currentItems.find((item) => item.id === newItem.id)
+
+        if (existingItem) {
+          // If item already exists, increase quantity
+          return currentItems.map((item) => (item.id === newItem.id ? { ...item, quantity: item.quantity + 1 } : item))
+        } else {
+          // Add new item
+          return [...currentItems, newItem]
+        }
+      })
+    }
   }
 
   const removeItem = (id: string) => {

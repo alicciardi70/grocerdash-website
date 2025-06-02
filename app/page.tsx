@@ -14,7 +14,7 @@ export default function Home() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center">
-              <span className="text-2xl font-bold text-blue-600">GrocerSmart</span>
+              <span className="text-2xl font-bold text-blue-600">Grocery Scout</span>
             </Link>
 
             <div className="flex items-center gap-4">
@@ -62,7 +62,7 @@ export default function Home() {
               <div className="md:w-1/2">
                 <div className="relative h-64 md:h-96 w-full">
                   <Image
-                    src="/placeholder.svg?height=400&width=600"
+                    src="/variety-organic-vegetables-supermarket.jpg"
                     alt="Grocery comparison"
                     fill
                     className="object-cover rounded-lg shadow-lg"
@@ -81,7 +81,7 @@ export default function Home() {
                 <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
                   <ShoppingBasket className="h-6 w-6 text-green-600" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Compare Prices</h3>
+                <h3 className="text-lg font-semibold mb-4">Compare Prices</h3>
                 <p className="text-gray-600">
                   See the price of your entire grocery basket across multiple stores to find the best deals.
                 </p>
@@ -123,7 +123,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-lg font-semibold mb-4">GrocerSmart</h3>
+              <h3 className="text-lg font-semibold mb-4">Grocery Scout</h3>
               <p className="text-gray-600">Compare grocery prices and nutrition information to shop smarter.</p>
             </div>
 
@@ -192,7 +192,7 @@ export default function Home() {
           </div>
 
           <div className="mt-8 pt-8 border-t text-center text-gray-500">
-            <p>&copy; {new Date().getFullYear()} GrocerSmart. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Grocery Scout. All rights reserved.</p>
           </div>
         </div>
       </footer>

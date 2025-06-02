@@ -98,7 +98,7 @@ export default function StoresPage() {
 
               return (
                 <div
-                  key={store.id}
+                  key={`${store.id}-${store.name}`}
                   className={`border rounded-lg p-4 cursor-pointer transition-colors ${
                     isSelected
                       ? "border-blue-600 bg-blue-50"

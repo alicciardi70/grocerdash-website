@@ -11,28 +11,49 @@ interface BasketStoreComparisonProps {
 }
 
 export default function BasketStoreComparison({ basketItems, stores }: BasketStoreComparisonProps) {
-  const { selectedStores, zipCode } = useLocation()
+  const { zipCode } = useLocation()
 
-  // If no items or stores, don't render anything
-  if (!basketItems || basketItems.length === 0 || !stores || stores.length === 0) {
+  if (!basketItems?.length || !stores?.length) {
     return null
   }
 
-  // Calculate what each store would cost for ALL items in basket
+  // Calculate total cost and available items for each store
   const storeComparisons = stores.map((store) => {
-    let totalCost = basketItems.reduce((sum, item) => {
-      const storePrice = item.price || 0 // Assume `item.price` is a number
-      return sum + storePrice * item.quantity
-    }, 0)
+    // For each store, calculate which items are available in this store
+    const itemsInStore = basketItems.map((item) => {
+      // First check if this store has a valid price for this item
+      let priceInStore = 0
 
-    let availableItems = basketItems.filter((item) => {
-      return item.price > 0 // Check if `item.price` is greater than 0
-    }).length
+      // If the item was added from this store, use its price
+      if (item.store === store.name) {
+        priceInStore = item.price
+      }
+      // Otherwise check if there's a price for this store in the prices array
+      else {
+        const storePrice = item.prices?.find((p) => p.store === store.name)
+        if (storePrice && storePrice.price > 0) {
+          priceInStore = storePrice.price
+        }
+      }
+
+      // Only include items that have a valid price in this store
+      return priceInStore > 0
+        ? {
+            ...item,
+            priceInThisStore: priceInStore,
+          }
+        : null
+    }).filter((item): item is (BasketItem & { priceInThisStore: number }) => item !== null)
+
+    const totalCost = itemsInStore.reduce((sum, item) => {
+      return sum + item.priceInThisStore * item.quantity
+    }, 0)
 
     return {
       store: store.name,
       totalCost,
-      availableItems,
+      availableItems: itemsInStore.length,
+      items: itemsInStore, // Keep track of which items are in this store
     }
   })
 
@@ -40,7 +61,7 @@ export default function BasketStoreComparison({ basketItems, stores }: BasketSto
   storeComparisons.sort((a, b) => a.totalCost - b.totalCost)
 
   const lowestPrice = storeComparisons[0]?.totalCost || 0
-  const highestPrice = Math.max(...storeComparisons.map((sc) => sc.totalCost))
+  const highestPrice = storeComparisons[storeComparisons.length - 1]?.totalCost || 0
   const totalItems = basketItems.reduce((sum, item) => sum + item.quantity, 0)
 
   return (

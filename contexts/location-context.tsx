@@ -65,51 +65,17 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const loadStoresForZipCode = (zip: string) => {
-    // Mock data - in real app this would be an API call
-    const mockStores: Store[] = [
-      {
-        id: 1,
-        name: "Fresh Market",
-        address: "123 Main St",
-        distance: "0.8 miles",
-        image: "/placeholder.svg?height=100&width=100",
-      },
-      {
-        id: 2,
-        name: "Organic Grocers",
-        address: "456 Oak Ave",
-        distance: "1.2 miles",
-        image: "/placeholder.svg?height=100&width=100",
-      },
-      {
-        id: 3,
-        name: "Value Supermarket",
-        address: "789 Pine Rd",
-        distance: "1.5 miles",
-        image: "/placeholder.svg?height=100&width=100",
-      },
-      {
-        id: 4,
-        name: "Farmers Direct",
-        address: "101 Cedar Ln",
-        distance: "2.3 miles",
-        image: "/placeholder.svg?height=100&width=100",
-      },
-      {
-        id: 5,
-        name: "Super Saver",
-        address: "202 Maple Dr",
-        distance: "3.1 miles",
-        image: "/placeholder.svg?height=100&width=100",
-      },
-    ]
-
-    setAvailableStores(mockStores)
-
-    // Auto-select first 3 stores if none selected
-    if (selectedStores.length === 0) {
-      setSelectedStores(mockStores.slice(0, 3))
+  const loadStoresForZipCode = async (zip: string) => {
+    try {
+      const response = await fetch(`https://api.groceryscout.net/supermarkets?zipcode=${zip}&radius=3`)
+      if (!response.ok) {
+        throw new Error("Failed to fetch stores")
+      }
+      const stores = await response.json()
+      setAvailableStores(stores)
+    } catch (error) {
+      console.error("Error loading stores:", error)
+      setAvailableStores([]) // Fallback to empty list
     }
   }
 
