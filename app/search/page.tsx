@@ -276,7 +276,7 @@ export default function SearchPage() {
                       src={product.image || "/placeholder.svg"}
                       alt={product.name}
                       fill
-                      className={cn("object-contain p-2")}
+                      className="object-contain"
                     />
                   </div>
                   <div className="flex-1">
