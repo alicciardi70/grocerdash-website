@@ -342,7 +342,7 @@ export default function SearchPage() {
                         <div className="text-sm text-gray-500 italic">No prices available</div>
                       )}
                     </div>
-                    <BasketButton product={product} className="w-full" />
+                    <BasketButton product={product} className="w-l/2" />
                   </div>
                 </div>
               </CardContent>
